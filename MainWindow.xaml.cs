@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Configuration;
+using System.Windows;
 
 namespace ZooManager
 {
@@ -11,7 +12,7 @@ namespace ZooManager
         {
             InitializeComponent();
 
-            string connectionString = "TrainingDBConnectionString";
+            string connectionString = ConfigurationManager.ConnectionStrings["ZooManager.Properties.Settings.TrainingDBConnectionString"].ConnectionString;
         }
     }
 }
