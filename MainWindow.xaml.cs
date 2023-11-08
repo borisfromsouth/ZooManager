@@ -27,8 +27,33 @@ namespace ZooManager
 
             ShowZooData();
             listZoo.SelectedValue = 1;
+            ShowAllAnimals();
         }
-        
+
+        private void ShowAllAnimals()
+        {
+            try
+            {
+                string query = "SELECT * FROM Animal";
+                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(query, sqlConnection);
+
+                using (sqlDataAdapter)
+                {
+                    DataTable dataTable = new DataTable();
+                    sqlDataAdapter.Fill(dataTable);
+
+                    listAllAnimals.DisplayMemberPath = "Name";      // Что из таблицы выводится в интерфейс
+                    listAllAnimals.SelectedValuePath = "Id";            // Что передвется когда выбран предмет из сипска
+                    listAllAnimals.ItemsSource = dataTable.DefaultView; // Указываем источник данных 
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+
         private void ShowZooData()
         {
             // Для работы с БД рекомендуется испрользовать try-catch
