@@ -2,7 +2,6 @@
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -24,11 +23,28 @@ namespace ZooManager
             string connectionString = ConfigurationManager.ConnectionStrings["ZooManager.Properties.Settings.TrainingDBConnectionString"].ConnectionString;
             sqlConnection = new SqlConnection(connectionString);
 
-
             ShowZooData();
             listZoo.SelectedValue = 1;
             ShowAllAnimals();
         }
+        
+        private void listZoo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ShowAnimalData();
+            SelectZooValueToTextbox();
+        }
+        
+        private void listAnimals_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SelectAnimalValueToTextbox();
+        }
+        
+        private void listAllAnimals_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SelectAllAnimalValueToTextbox();
+        }
+
+        #region Select
 
         private void ShowAllAnimals()
         {
@@ -47,14 +63,10 @@ namespace ZooManager
                     listAllAnimals.ItemsSource = dataTable.DefaultView; // Указываем источник данных 
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            catch (Exception ex){ /*MessageBox.Show(ex.Message);*/ }
 
-            listAllAnimals.SelectedValue = 1;
+            //listAllAnimals.SelectedValue = 1;
         }
-
 
         private void ShowZooData()
         {
@@ -74,12 +86,11 @@ namespace ZooManager
                     listZoo.DisplayMemberPath = "Location";      // Что из таблицы выводится в интерфейс
                     listZoo.SelectedValuePath = "Id";            // Что передвется когда выбран предмет из сипска
                     listZoo.ItemsSource = dataTable.DefaultView; // Указываем источник данных 
+
+                    //listZoo.SelectedIndex = 0;
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            catch (Exception ex){/*MessageBox.Show(ex.Message);*/}
         }
 
         private void ShowAnimalData()
@@ -105,23 +116,12 @@ namespace ZooManager
                     listAnimals.ItemsSource = animalDataTable.DefaultView; // Указываем источник данных 
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            catch (Exception ex) {/*MessageBox.Show(ex.Message);*/}
         }
 
-        private void listZoo_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ShowAnimalData();
-            SelectZooValueToTextbox();
-        }
-        
-        private void listAnimals_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            //inputTextBox.Text = listAnimals.DisplayMemberPath;
-            SelectAnimalValueToTextbox();
-        }
+        #endregion
+
+        #region SetTextBox
 
         private void SelectZooValueToTextbox()
         {
@@ -141,11 +141,7 @@ namespace ZooManager
 
                     inputTextBox.Text = animalDataTable.Rows[0]["Location"].ToString();
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            }catch (Exception ex) { /*MessageBox.Show(ex.Message);*/ }
         }
 
         private void SelectAnimalValueToTextbox()
@@ -166,11 +162,7 @@ namespace ZooManager
 
                     inputTextBox.Text = animalDataTable.Rows[0]["Name"].ToString();
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            } catch (Exception ex){ /*MessageBox.Show(ex.Message);*/ }
         }
 
         private void SelectAllAnimalValueToTextbox()
@@ -192,11 +184,12 @@ namespace ZooManager
                     inputTextBox.Text = animalDataTable.Rows[0]["Name"].ToString();
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            catch (Exception ex) { /*MessageBox.Show(ex.Message);*/ }
         }
+
+        #endregion
+
+        #region Add
 
         private void AddZoo_Click(object sender, RoutedEventArgs e)
         {
@@ -210,10 +203,7 @@ namespace ZooManager
                 sqlCommand.Parameters.AddWithValue("@Location", inputTextBox.Text);
                 sqlCommand.ExecuteScalar();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(e.ToString());
-            }
+            catch (Exception ex) { /*MessageBox.Show(e.ToString());*/ }
             finally
             {
                 this.sqlConnection.Close();
@@ -233,60 +223,11 @@ namespace ZooManager
                 sqlCommand.Parameters.AddWithValue("@Animal", inputTextBox.Text); // SelectedValue это Id
                 sqlCommand.ExecuteScalar();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(e.ToString());
-            }
+            catch (Exception ex) { /*MessageBox.Show(e.ToString());*/ }
             finally
             {
                 this.sqlConnection.Close();
                 this.ShowAllAnimals();
-            }
-        }
-
-        private void UpdateZoo_Click(object sender, RoutedEventArgs e)
-        {
-            if (listZoo.SelectedValue == null) return;
-            try
-            {
-                string query = "UPDATE Zoo SET Location = @NewLocation";
-
-                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
-                this.sqlConnection.Open();
-                sqlCommand.Parameters.AddWithValue("@NewLocation", inputTextBox.Text);
-                sqlCommand.ExecuteScalar();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(e.ToString());
-            }
-            finally
-            {
-                this.sqlConnection.Close();
-                this.ShowZooData();
-            }
-        }
-
-        private void UpdateAnimal_Click(object sender, RoutedEventArgs e)
-        {
-            if (listZoo.SelectedValue == null) return;
-            try
-            {
-                string query = "UPDATE Animal SET Name = @NewAnimalName";
-
-                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
-                this.sqlConnection.Open();
-                sqlCommand.Parameters.AddWithValue("@NewAnimalName", inputTextBox.Text);
-                sqlCommand.ExecuteScalar();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(e.ToString());
-            }
-            finally
-            {
-                this.sqlConnection.Close();
-                this.ShowAnimalData();
             }
         }
 
@@ -303,16 +244,63 @@ namespace ZooManager
                 sqlCommand.Parameters.AddWithValue("@AnimalId", listAllAnimals.SelectedValue); // SelectedValue это Id
                 sqlCommand.ExecuteScalar();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(e.ToString());
-            }
+            catch (Exception ex) { /*MessageBox.Show(e.ToString());*/ }
             finally
             {
                 this.sqlConnection.Close();
                 this.ShowAnimalData();
             }
         }
+
+        #endregion
+
+        #region Update
+
+        private void UpdateZoo_Click(object sender, RoutedEventArgs e)
+        {
+            if (listZoo.SelectedValue == null) return;
+            try
+            {
+                string query = "UPDATE Zoo SET Location = @NewLocation WHERE id = @ZooId";
+
+                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                this.sqlConnection.Open();
+                sqlCommand.Parameters.AddWithValue("@NewLocation", inputTextBox.Text);
+                sqlCommand.Parameters.AddWithValue("@ZooId", listZoo.SelectedValue);
+                sqlCommand.ExecuteScalar();
+            }
+            catch (Exception ex) { /*MessageBox.Show(e.ToString());*/ }
+            finally
+            {
+                this.sqlConnection.Close();
+                this.ShowZooData();
+            }
+        }
+
+        private void UpdateAnimal_Click(object sender, RoutedEventArgs e)
+        {
+            if (listZoo.SelectedValue == null) return;
+            try
+            {
+                string query = "UPDATE Animal SET Name = @NewAnimalName WHERE id = @AnimalId";
+
+                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                this.sqlConnection.Open();
+                sqlCommand.Parameters.AddWithValue("@NewAnimalName", inputTextBox.Text);
+                sqlCommand.Parameters.AddWithValue("@AnimalId", listAnimals.SelectedValue);
+                sqlCommand.ExecuteScalar();
+            }
+            catch (Exception ex){ /*MessageBox.Show(e.ToString());*/ }
+            finally
+            {
+                this.sqlConnection.Close();
+                this.ShowAnimalData();
+            }
+        }
+
+        #endregion
+
+        #region Delete
 
         private void DeleteAnimal_Click(object sender, RoutedEventArgs e) // из общего списка
         {
@@ -326,10 +314,7 @@ namespace ZooManager
                 sqlCommand.Parameters.AddWithValue("@AnimalId", listAllAnimals.SelectedValue);
                 sqlCommand.ExecuteScalar();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(e.ToString());
-            }
+            catch (Exception ex) { /*MessageBox.Show(e.ToString());*/ }
             finally
             {
                 this.sqlConnection.Close();
@@ -349,10 +334,7 @@ namespace ZooManager
                 sqlCommand.Parameters.AddWithValue("@ZooId", listZoo.SelectedValue);
                 sqlCommand.ExecuteScalar();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(e.ToString());
-            }
+            catch (Exception ex) { /*MessageBox.Show(e.ToString());*/ }
             finally
             {
                 this.sqlConnection.Close();
@@ -373,21 +355,15 @@ namespace ZooManager
                 sqlCommand.Parameters.AddWithValue("@temp2", listAnimals.SelectedValue);
                 sqlCommand.ExecuteScalar();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(e.ToString());
-            }
+            catch (Exception ex){ /*MessageBox.Show(e.ToString());*/ }
             finally
             {
                 this.sqlConnection.Close();
-                //this.ShowZooData();
                 this.ShowAnimalData();
             }
         }
 
-        private void listAllAnimals_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            SelectAllAnimalValueToTextbox();
-        }
+        #endregion
+
     }
 }
